@@ -64,11 +64,11 @@ export function AuthWallModal({ isOpen, onLogin }: Props) {
         {/* Brand Header */}
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
-            <div className="relative group">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl border border-indigo-500/50 shadow-2xl shadow-indigo-500/40 bg-[#0b0e23] p-1.5 flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden">
               <img
-                src="/logo.jpg"
+                src="/logo-icon.jpg"
                 alt="Quizora AI"
-                className="h-16 sm:h-20 w-auto rounded-2xl border border-indigo-500/40 shadow-2xl shadow-indigo-500/30 object-contain bg-[#0b0e23] p-1.5 group-hover:scale-105 transition-transform"
+                className="h-full w-full object-contain"
               />
             </div>
           </div>

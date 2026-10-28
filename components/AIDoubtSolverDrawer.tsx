@@ -14,6 +14,8 @@ import {
   BookOpen,
   ArrowRight,
   ShieldCheck,
+  Key,
+  CheckCircle2,
 } from 'lucide-react';
 import { ChatMessage, Question, StudentUser } from '@/lib/types';
 
@@ -23,6 +25,7 @@ interface Props {
   weakSubSkills: string[];
   activeQuestion?: Question | null;
   apiKey?: string;
+  onSaveApiKey?: (key: string) => void;
 }
 
 export function AIDoubtSolverDrawer({
@@ -30,24 +33,35 @@ export function AIDoubtSolverDrawer({
   currentTopic,
   weakSubSkills,
   activeQuestion,
-  apiKey,
+  apiKey: initialApiKey = '',
+  onSaveApiKey,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const [apiKey, setApiKey] = useState(initialApiKey);
+  const [showKeyInput, setShowKeyInput] = useState(false);
+  const [keySavedToast, setKeySavedToast] = useState(false);
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-1',
       role: 'assistant',
       content: `Hello ${student.name}! I'm your personalized **Quizora AI Tutor**. 
 
-I'm aware of your preferred **${student.preferredLearningStyle.toUpperCase()}** learning style and current study focus on **${currentTopic}**. 
+I'm aware of your preferred **${student.preferredLearningStyle.toUpperCase()}** learning style and current study focus on **${currentTopic}**${
+        weakSubSkills.length > 0 ? ` (targeted gaps: ${weakSubSkills.join(', ')})` : ''
+      }. 
 
-Ask me anything, or tap one of the quick chips below!`,
+Ask me any question, doubt, or code pattern — or tap one of the quick chips below!`,
       timestamp: new Date().toISOString(),
     },
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setApiKey(initialApiKey);
+  }, [initialApiKey]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -60,10 +74,29 @@ Ask me anything, or tap one of the quick chips below!`,
   }, [messages, isOpen]);
 
   const quickChips = [
-    { label: '💡 Explain my last wrong answer simply', prompt: 'Explain my last wrong answer simply' },
+    { label: '💡 Explain my last wrong answer', prompt: 'Explain my last wrong answer simply' },
     { label: '🌍 Give me a real-world analogy', prompt: 'Give me a real-world analogy for this topic' },
     { label: '🎯 Quiz me on my weakest sub-topic', prompt: 'Quiz me on my weakest sub-topic' },
+    ...(activeQuestion
+      ? [{ label: `🔍 Help with: ${activeQuestion.subSkill}`, prompt: `Can you explain the concept behind this question: "${activeQuestion.questionText}"?` }]
+      : []),
   ];
+
+  const handleSaveInlineKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      localStorage.setItem('adaptlearn_api_key', apiKey.trim());
+      localStorage.setItem('quizora_api_key', apiKey.trim());
+    } catch (e) {}
+    if (onSaveApiKey) {
+      onSaveApiKey(apiKey.trim());
+    }
+    setKeySavedToast(true);
+    setTimeout(() => {
+      setKeySavedToast(false);
+      setShowKeyInput(false);
+    }, 1500);
+  };
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputValue).trim();
@@ -104,6 +137,10 @@ Ask me anything, or tap one of the quick chips below!`,
             role: 'assistant',
             content: data.reply,
             timestamp: new Date().toISOString(),
+            contextTag:
+              data.engine === 'gemini'
+                ? `⚡ Gemini API (${data.model || '2.5-flash'})`
+                : `🧠 Quizora Intelligent Engine`,
           },
         ]);
       } else {
@@ -112,19 +149,19 @@ Ask me anything, or tap one of the quick chips below!`,
           {
             id: `assistant-${Date.now()}`,
             role: 'assistant',
-            content: `I'm here to help, ${student.name}! Ask me any specific question about ${currentTopic}.`,
+            content: `I could not generate an answer: ${data.error || 'Please rephrase your question.'}`,
             timestamp: new Date().toISOString(),
           },
         ]);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Chat tutor error:', err);
       setMessages((prev) => [
         ...prev,
         {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
-          content: `I had trouble connecting to the network, but remember: in ${currentTopic}, focus on memory allocation and Big-O invariants!`,
+          content: `Network connection error: ${err.message || 'Please check your connection and try again.'}`,
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -145,7 +182,9 @@ Ask me anything, or tap one of the quick chips below!`,
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75" />
           <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-400" />
         </span>
-        <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white group-hover:rotate-12 transition-transform" />
+        <div className="w-5 h-5 rounded-md overflow-hidden bg-[#0b0e23] border border-indigo-400/40 flex items-center justify-center shrink-0">
+          <img src="/logo-icon.jpg" alt="Quizora AI" className="w-full h-full object-contain p-0.5" />
+        </div>
         <span>Ask AI Tutor</span>
       </button>
 
@@ -158,16 +197,16 @@ Ask me anything, or tap one of the quick chips below!`,
             className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
           />
 
-          <div className="absolute inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
-            <div className="w-screen max-w-lg bg-slate-900 border-l border-slate-800 text-slate-100 flex flex-col shadow-2xl relative">
+          <div className="absolute inset-y-0 right-0 max-w-full flex pl-4 sm:pl-10">
+            <div className="w-screen max-w-xl bg-slate-900 border-l border-slate-800 text-slate-100 flex flex-col shadow-2xl relative">
               {/* Drawer Header */}
-              <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80 backdrop-blur-md flex items-center justify-between gap-3">
+              <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl overflow-hidden border border-indigo-500/40 shadow-md bg-[#0b0e23] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden border border-indigo-500/40 shadow-md bg-[#0b0e23] flex items-center justify-center shrink-0 p-0.5">
                     <img
-                      src="/logo.jpg"
+                      src="/logo-icon.jpg"
                       alt="Quizora AI"
-                      className="w-full h-full object-cover object-left scale-125"
+                      className="w-full h-full object-contain"
                     />
                   </div>
                   <div>
@@ -183,25 +222,80 @@ Ask me anything, or tap one of the quick chips below!`,
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyInput(!showKeyInput)}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition ${
+                      apiKey
+                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                        : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20 hover:bg-indigo-500/20'
+                    }`}
+                  >
+                    <Key className="w-3 h-3" />
+                    <span>{apiKey ? 'Gemini Key Active' : 'API Key'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
+              {/* Inline API Key Input Drawer (Collapsible) */}
+              {showKeyInput && (
+                <div className="p-3 bg-slate-950 border-b border-slate-800 animate-slide-up text-xs">
+                  <form onSubmit={handleSaveInlineKey} className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="password"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        placeholder="Paste Google Gemini API Key (AIzaSy...)"
+                        className="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shrink-0 flex items-center gap-1"
+                    >
+                      {keySavedToast ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Saved!</span>
+                        </>
+                      ) : (
+                        'Save Key'
+                      )}
+                    </button>
+                  </form>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Optionally connects to live Gemini API. If empty, uses Quizora's built-in intelligent knowledge engine!
+                  </p>
+                </div>
+              )}
+
               {/* Context Summary Bar */}
-              <div className="px-4 py-2 bg-slate-950/90 border-b border-slate-800 text-[11px] text-slate-400 flex flex-wrap items-center justify-between gap-2">
+              <div className="px-4 py-2 bg-slate-950/80 border-b border-slate-800 text-[11px] text-slate-400 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 truncate">
                   <BookOpen className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                  <span className="truncate">Topic: <strong className="text-slate-200">{currentTopic}</strong></span>
+                  <span className="truncate">
+                    Topic: <strong className="text-slate-200">{currentTopic}</strong>
+                  </span>
                 </div>
-                {weakSubSkills.length > 0 && (
-                  <div className="text-[10px] text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 truncate">
-                    Focused Gap: {weakSubSkills[0]}
-                  </div>
-                )}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 capitalize">
+                    {student.preferredLearningStyle} Style
+                  </span>
+                  {weakSubSkills.length > 0 && (
+                    <span className="text-[10px] text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 truncate max-w-[140px]">
+                      Gap: {weakSubSkills[0]}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Chat Messages Feed */}
@@ -211,37 +305,45 @@ Ask me anything, or tap one of the quick chips below!`,
                   return (
                     <div
                       key={msg.id}
-                      className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
+                      className={`flex gap-2.5 sm:gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
                     >
                       {!isUser && (
-                        <div className="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 shrink-0 mt-0.5">
-                          <Bot className="w-4 h-4" />
+                        <div className="w-8 h-8 rounded-xl overflow-hidden border border-indigo-500/40 bg-[#0b0e23] flex items-center justify-center shrink-0 mt-0.5 p-0.5 shadow-sm">
+                          <img
+                            src="/logo-icon.jpg"
+                            alt="Quizora AI Tutor"
+                            className="w-full h-full object-contain"
+                          />
                         </div>
                       )}
 
                       <div
-                        className={`max-w-[85%] rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed shadow-sm ${
+                        className={`max-w-[88%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm leading-relaxed shadow-sm ${
                           isUser
                             ? 'bg-indigo-600 text-white rounded-br-sm'
                             : 'bg-slate-800/80 border border-slate-700/80 text-slate-200 rounded-bl-sm space-y-2'
                         }`}
                       >
-                        <div className="whitespace-pre-wrap">{msg.content}</div>
-                        <div
-                          className={`text-[10px] text-right mt-1 ${
-                            isUser ? 'text-indigo-200' : 'text-slate-500'
-                          }`}
-                        >
-                          {new Date(msg.timestamp).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                        <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+
+                        <div className="flex items-center justify-between gap-2 mt-2 pt-1 border-t border-white/5 text-[10px]">
+                          {msg.contextTag ? (
+                            <span className="text-indigo-300 font-mono">{msg.contextTag}</span>
+                          ) : (
+                            <span />
+                          )}
+                          <span className={isUser ? 'text-indigo-200' : 'text-slate-500'}>
+                            {new Date(msg.timestamp).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
                         </div>
                       </div>
 
                       {isUser && (
-                        <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shrink-0 mt-0.5">
-                          <User className="w-4 h-4" />
+                        <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shrink-0 mt-0.5 font-bold text-xs">
+                          {student.name.charAt(0)}
                         </div>
                       )}
                     </div>
@@ -250,14 +352,20 @@ Ask me anything, or tap one of the quick chips below!`,
 
                 {isTyping && (
                   <div className="flex gap-3 justify-start items-center text-slate-400 text-xs">
-                    <div className="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 shrink-0">
-                      <Bot className="w-4 h-4" />
+                    <div className="w-8 h-8 rounded-xl overflow-hidden border border-indigo-500/40 bg-[#0b0e23] flex items-center justify-center shrink-0 p-0.5">
+                      <img
+                        src="/logo-icon.jpg"
+                        alt="Quizora AI Tutor"
+                        className="w-full h-full object-contain"
+                      />
                     </div>
-                    <div className="bg-slate-800/80 border border-slate-700 p-3 rounded-2xl flex items-center gap-1.5">
+                    <div className="bg-slate-800/80 border border-slate-700 p-3 rounded-2xl flex items-center gap-1.5 shadow-sm">
                       <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" />
                       <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.2s]" />
                       <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.4s]" />
-                      <span className="text-[11px] text-slate-400 ml-1">AI Tutor formulating explanation...</span>
+                      <span className="text-[11px] text-slate-300 ml-1 font-medium">
+                        Quizora AI Tutor is formulating explanation...
+                      </span>
                     </div>
                   </div>
                 )}

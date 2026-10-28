@@ -51,11 +51,11 @@ export function Navbar({
           onClick={() => onNavigate('setup')}
           className="flex items-center gap-2.5 cursor-pointer group shrink-0"
         >
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-indigo-500/40 shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 group-hover:scale-105 transition-all bg-[#0b0e23] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-indigo-500/40 shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 group-hover:scale-105 transition-all bg-[#0b0e23] flex items-center justify-center shrink-0 p-0.5">
             <img
-              src="/logo.jpg"
+              src="/logo-icon.jpg"
               alt="Quizora AI Logo"
-              className="w-full h-full object-cover object-left scale-125"
+              className="w-full h-full object-contain"
             />
           </div>
           <div>

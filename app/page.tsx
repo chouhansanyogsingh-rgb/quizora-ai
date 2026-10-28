@@ -367,13 +367,14 @@ export default function HomePage() {
           weakSubSkills={weakSkillsList}
           activeQuestion={activeQuestion}
           apiKey={apiKey}
+          onSaveApiKey={handleSaveApiKey}
         />
       )}
 
       {/* Footer */}
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-400 bg-slate-950/60">
         <div className="flex items-center justify-center gap-2 mb-1.5">
-          <img src="/logo.jpg" alt="Quizora AI" className="h-6 w-auto rounded-md object-contain bg-[#0b0e23]" />
+          <img src="/logo-icon.jpg" alt="Quizora AI" className="h-6 w-6 rounded-md object-contain bg-[#0b0e23] border border-indigo-500/30 p-0.5" />
           <span className="font-extrabold text-white text-sm">Quizora AI</span>
           <span className="text-slate-500">•</span>
           <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Learn • Practice • Improve</span>
