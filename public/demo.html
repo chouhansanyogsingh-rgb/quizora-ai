@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quizora AI — Official Demo Video & Presentation Walkthrough</title>
+  <link rel="icon" href="/logo-icon.jpg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+    .glow-bg {
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-indigo-500 selection:text-white antialiased">
+
+  <!-- Ambient Glow Effects -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-indigo-600/15 rounded-full blur-[140px] pointer-events-none glow-bg"></div>
+
+  <!-- Navigation Bar -->
+  <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl overflow-hidden border border-indigo-500/40 bg-[#0b0e23] p-0.5 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <img src="/logo-icon.jpg" alt="Quizora AI" class="w-full h-full object-contain">
+        </div>
+        <div>
+          <span class="font-black text-lg tracking-tight bg-gradient-to-r from-white via-indigo-100 to-indigo-300 bg-clip-text text-transparent">Quizora AI</span>
+          <span class="ml-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">Official Demo</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-xs font-bold text-slate-300 hover:text-white px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition flex items-center gap-1.5">
+          <span>🚀 Launch Live App</span>
+        </a>
+        <a href="/quizora-demo-video.webm" download="quizora-demo-video.webm" class="text-xs font-bold text-white px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition flex items-center gap-1.5">
+          <span>📥 Download Video</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8 relative">
+    
+    <div class="text-center max-w-3xl mx-auto space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-widest">
+        <span>🎬 Official Product Demo • Under 4 Minutes</span>
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+        Intelligent Adaptive Learning &amp; <br class="hidden sm:block">
+        <span class="bg-gradient-to-r from-indigo-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent">Knowledge Gap Remediation</span>
+      </h1>
+      <p class="text-sm sm:text-base text-slate-400">
+        Watch the end-to-end walkthrough of Quizora AI: 1-Click fast judging login, stateful Item Response difficulty adaptation, instant misconception explanation cards, Recharts gap diagnostics, and style-tailored micro-lessons.
+      </p>
+    </div>
+
+    <!-- Video Player Container -->
+    <div class="bg-slate-900/90 border-2 border-indigo-500/40 rounded-3xl p-3 sm:p-5 shadow-2xl shadow-indigo-950/50 backdrop-blur-xl relative overflow-hidden">
+      <div class="relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 aspect-video shadow-inner">
+        <video id="demoVideo" controls preload="auto" class="w-full h-full object-contain" poster="/logo.jpg">
+          <source src="/quizora-demo-video.webm" type="video/webm">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <!-- Quick Chapter Markers Bar -->
+      <div class="mt-4 pt-4 border-t border-slate-800">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Chapter Select:</span>
+          <span class="text-xs text-indigo-400 font-semibold" id="timeDisplay">00:00 / 03:30</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 text-xs">
+          <button onclick="seekTo(0)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-indigo-600/30 border border-slate-700/80 hover:border-indigo-500/50 text-left transition">
+            <span class="text-[10px] text-indigo-400 font-bold block">00:00</span>
+            <span class="font-semibold text-slate-200 truncate block">1. Auth Wall &amp; Login</span>
+          </button>
+          <button onclick="seekTo(20)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-indigo-600/30 border border-slate-700/80 hover:border-indigo-500/50 text-left transition">
+            <span class="text-[10px] text-indigo-400 font-bold block">00:20</span>
+            <span class="font-semibold text-slate-200 truncate block">2. Streak &amp; XP Bar</span>
+          </button>
+          <button onclick="seekTo(35)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-indigo-600/30 border border-slate-700/80 hover:border-indigo-500/50 text-left transition">
+            <span class="text-[10px] text-indigo-400 font-bold block">00:35</span>
+            <span class="font-semibold text-slate-200 truncate block">3. Topic &amp; Style</span>
+          </button>
+          <button onclick="seekTo(55)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-indigo-600/30 border border-slate-700/80 hover:border-indigo-500/50 text-left transition">
+            <span class="text-[10px] text-indigo-400 font-bold block">00:55</span>
+            <span class="font-semibold text-slate-200 truncate block">4. Adaptive Quiz</span>
+          </button>
+          <button onclick="seekTo(85)" class="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/50 hover:border-rose-400 text-left transition shadow-md shadow-rose-950/30">
+            <span class="text-[10px] text-rose-400 font-bold block">01:25</span>
+            <span class="font-semibold text-rose-200 truncate block">★ Wrong Answer Card</span>
+          </button>
+          <button onclick="seekTo(128)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-indigo-600/30 border border-slate-700/80 hover:border-indigo-500/50 text-left transition">
+            <span class="text-[10px] text-indigo-400 font-bold block">02:08</span>
+            <span class="font-semibold text-slate-200 truncate block">5. Gap Dashboard</span>
+          </button>
+          <button onclick="seekTo(160)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-indigo-600/30 border border-slate-700/80 hover:border-indigo-500/50 text-left transition">
+            <span class="text-[10px] text-emerald-400 font-bold block">02:40</span>
+            <span class="font-semibold text-emerald-200 truncate block">6. Targeted Lesson</span>
+          </button>
+          <button onclick="seekTo(188)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-indigo-600/30 border border-slate-700/80 hover:border-indigo-500/50 text-left transition">
+            <span class="text-[10px] text-cyan-400 font-bold block">03:08</span>
+            <span class="font-semibold text-cyan-200 truncate block">7. Live Recalibration</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature Highlights Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-2.5">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center font-bold text-lg">
+          ⚡
+        </div>
+        <h3 class="text-base font-bold text-white">Item Response Adaptation</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Questions adapt difficulty (Easy &rarr; Medium &rarr; Hard) in real-time based on past correctness, confidence rating, and response latency.
+        </p>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-2.5">
+        <div class="w-10 h-10 rounded-xl bg-rose-600/20 border border-rose-500/30 text-rose-400 flex items-center justify-center font-bold text-lg">
+          🎯
+        </div>
+        <h3 class="text-base font-bold text-white">Instant Misconception Cards</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Wrong answers halt the quiz to provide clear conceptual breakdowns explaining the specific misconception before the student advances.
+        </p>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-2.5">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-lg">
+          📈
+        </div>
+        <h3 class="text-base font-bold text-white">Dynamic Score Recalibration</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Targeted micro-lessons generate personalized visual mental models and targeted exercises that update dashboard mastery scores in real time.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-8 text-center text-xs text-slate-500 bg-slate-950/80">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <img src="/logo-icon.jpg" alt="Quizora AI" class="w-5 h-5 rounded object-contain">
+        <strong class="text-white">Quizora AI</strong>
+        <span>•</span>
+        <span class="text-indigo-400 font-semibold">LEARN • PRACTICE • IMPROVE</span>
+      </div>
+      <div>
+        Built with Next.js 14, Tailwind CSS, Recharts, and Google Gemini API
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const video = document.getElementById('demoVideo');
+    const timeDisplay = document.getElementById('timeDisplay');
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    video.addEventListener('timeupdate', () => {
+      timeDisplay.innerText = `${formatTime(video.currentTime)} / ${formatTime(video.duration || 210)}`;
+    });
+
+    function seekTo(seconds) {
+      video.currentTime = seconds;
+      video.play();
+    }
+  </script>
+</body>
+</html>

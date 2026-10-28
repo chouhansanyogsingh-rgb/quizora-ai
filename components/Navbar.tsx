@@ -11,6 +11,7 @@ import {
   ArrowRight,
   LogOut,
   User,
+  Video,
 } from 'lucide-react';
 import { DiagnosticResult, StudentUser } from '@/lib/types';
 import { NavbarGamification } from './StreakGamificationBar';
@@ -137,6 +138,18 @@ export function Navbar({
               )}
             </div>
           )}
+
+          {/* Demo Video Showcase Link */}
+          <a
+            href="/demo.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Watch Official 3-Minute Demo Video"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:text-white text-xs font-bold transition shadow-sm"
+          >
+            <Video className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Demo Video</span>
+          </a>
 
           {/* Progress History Drawer Toggle */}
           <button
