@@ -372,8 +372,13 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-400 bg-slate-950/60">
-        <p>AdaptLearn AI — Stateful Adaptive Learning &amp; Knowledge Gap Remediation</p>
-        <p className="mt-1 text-[11px] text-slate-500">
+        <div className="flex items-center justify-center gap-2 mb-1.5">
+          <img src="/logo.jpg" alt="Quizora AI" className="h-6 w-auto rounded-md object-contain bg-[#0b0e23]" />
+          <span className="font-extrabold text-white text-sm">Quizora AI</span>
+          <span className="text-slate-500">•</span>
+          <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Learn • Practice • Improve</span>
+        </div>
+        <p className="text-[11px] text-slate-500">
           Item Response Difficulty Adaptation • Context-Aware AI Doubt Solver • 7-Day Consistency Streak
         </p>
       </footer>

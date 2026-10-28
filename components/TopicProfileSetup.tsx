@@ -107,7 +107,7 @@ export function TopicProfileSetup({ onStartAssessment, isLoading }: Props) {
           Configure Your <span className="bg-gradient-to-r from-indigo-400 via-cyan-300 to-indigo-300 bg-clip-text text-transparent">Adaptive Diagnostic</span>
         </h1>
         <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
-          Not a generic chatbot. AdaptLearn AI runs an Item Response diagnostic, pinpoints your exact sub-skill gaps, and generates targeted micro-lessons.
+          Not a generic chatbot. Quizora AI runs an Item Response diagnostic, pinpoints your exact sub-skill gaps, and generates targeted micro-lessons.
         </p>
       </div>
 

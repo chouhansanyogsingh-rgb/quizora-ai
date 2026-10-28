@@ -2,8 +2,12 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AdaptLearn AI — Adaptive Mastery & Knowledge Gap Remediation',
-  description: 'An adaptive learning platform that identifies student knowledge gaps and dynamically adapts their learning path.',
+  title: 'Quizora AI — Adaptive Learning & Knowledge Gap Remediation',
+  description: 'Quizora AI: Learn • Practice • Improve. An adaptive learning platform that identifies student knowledge gaps and dynamically adapts their learning path.',
+  icons: {
+    icon: '/logo.jpg',
+    apple: '/logo.jpg',
+  },
 };
 
 export default function RootLayout({

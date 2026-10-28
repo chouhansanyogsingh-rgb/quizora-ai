@@ -37,7 +37,7 @@ export function AIDoubtSolverDrawer({
     {
       id: 'welcome-1',
       role: 'assistant',
-      content: `Hello ${student.name}! I'm your personalized **AdaptLearn AI Tutor**. 
+      content: `Hello ${student.name}! I'm your personalized **Quizora AI Tutor**. 
 
 I'm aware of your preferred **${student.preferredLearningStyle.toUpperCase()}** learning style and current study focus on **${currentTopic}**. 
 
@@ -163,20 +163,22 @@ Ask me anything, or tap one of the quick chips below!`,
               {/* Drawer Header */}
               <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80 backdrop-blur-md flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-[1px] shadow-md shadow-indigo-500/20">
-                    <div className="w-full h-full bg-slate-900 rounded-[11px] flex items-center justify-center">
-                      <Bot className="w-5 h-5 text-indigo-400" />
-                    </div>
+                  <div className="w-10 h-10 rounded-xl overflow-hidden border border-indigo-500/40 shadow-md bg-[#0b0e23] flex items-center justify-center shrink-0">
+                    <img
+                      src="/logo.jpg"
+                      alt="Quizora AI"
+                      className="w-full h-full object-cover object-left scale-125"
+                    />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm sm:text-base font-extrabold text-white">AdaptLearn AI Tutor</h3>
+                      <h3 className="text-sm sm:text-base font-extrabold text-white">Quizora AI Tutor</h3>
                       <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                         Context-Aware
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400">
-                      Tutoring <strong className="text-white">{student.name}</strong> • Style: <span className="capitalize text-cyan-400">{student.preferredLearningStyle}</span>
+                    <p className="text-[10px] text-indigo-300/80 font-bold uppercase tracking-wider">
+                      LEARN • PRACTICE • IMPROVE
                     </p>
                   </div>
                 </div>

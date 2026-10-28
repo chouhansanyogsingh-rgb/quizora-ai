@@ -51,22 +51,24 @@ export function Navbar({
           onClick={() => onNavigate('setup')}
           className="flex items-center gap-2.5 cursor-pointer group shrink-0"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition">
-            <div className="w-full h-full bg-slate-900 rounded-[11px] flex items-center justify-center">
-              <Brain className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
-            </div>
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-indigo-500/40 shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 group-hover:scale-105 transition-all bg-[#0b0e23] flex items-center justify-center shrink-0">
+            <img
+              src="/logo.jpg"
+              alt="Quizora AI Logo"
+              className="w-full h-full object-cover object-left scale-125"
+            />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-sm sm:text-base tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">
-                AdaptLearn AI
+                Quizora AI
               </span>
-              <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                 PRO
               </span>
             </div>
-            <p className="hidden md:block text-[9px] text-slate-400 tracking-wide">
-              Adaptive Mastery &amp; Knowledge Gap Engine
+            <p className="hidden md:block text-[9px] text-indigo-300/80 font-semibold tracking-wider uppercase">
+              LEARN • PRACTICE • IMPROVE
             </p>
           </div>
         </div>

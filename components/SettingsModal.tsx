@@ -63,7 +63,7 @@ export function SettingsModal({ isOpen, onClose, apiKey, onSaveApiKey, onResetDa
               className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
             />
             <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-              If omitted, AdaptLearn AI uses the built-in intelligent curriculum synthesizer for zero-latency, offline-safe adaptive assessments and micro-lessons!
+              If omitted, Quizora AI uses the built-in intelligent curriculum synthesizer for zero-latency, offline-safe adaptive assessments and micro-lessons!
             </p>
           </div>
 

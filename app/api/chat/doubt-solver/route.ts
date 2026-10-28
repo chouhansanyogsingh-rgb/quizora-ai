@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         'The student is a STEP-BY-STEP learner. Structure explanations into clear, deterministic numbered pipelines (Step 1, Step 2, Step 3) with an edge-case checklist.',
     };
 
-    const systemPrompt = `You are AdaptLearn AI's personalized 1-on-1 pedagogical tutor assisting ${studentName}.
+    const systemPrompt = `You are Quizora AI's personalized 1-on-1 pedagogical tutor assisting ${studentName}.
 Student Learning Profile:
 - Name: ${studentName}
 - Semester: ${student?.semester || 'Semester 5'}

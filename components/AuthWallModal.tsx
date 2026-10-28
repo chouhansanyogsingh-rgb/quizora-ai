@@ -63,20 +63,25 @@ export function AuthWallModal({ isOpen, onLogin }: Props) {
 
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <div className="flex justify-center mb-4">
+            <div className="relative group">
+              <img
+                src="/logo.jpg"
+                alt="Quizora AI"
+                className="h-16 sm:h-20 w-auto rounded-2xl border border-indigo-500/40 shadow-2xl shadow-indigo-500/30 object-contain bg-[#0b0e23] p-1.5 group-hover:scale-105 transition-transform"
+              />
+            </div>
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Student Verification Portal</span>
           </div>
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/30">
-              <div className="w-full h-full bg-slate-900 rounded-[11px] flex items-center justify-center">
-                <Brain className="w-5 h-5 text-indigo-400" />
-              </div>
-            </div>
-            <h2 className="text-2xl font-black text-white tracking-tight">
-              Welcome to <span className="text-indigo-400">AdaptLearn AI</span>
-            </h2>
-          </div>
+          <h2 className="text-2xl font-black text-white tracking-tight mb-0.5">
+            Welcome to <span className="text-indigo-400">Quizora AI</span>
+          </h2>
+          <p className="text-[11px] font-bold text-indigo-300 uppercase tracking-widest mb-2">
+            LEARN • PRACTICE • IMPROVE
+          </p>
           <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
             Log in to initiate your stateful adaptive learning path, daily streak tracking, and personalized gap remediation.
           </p>

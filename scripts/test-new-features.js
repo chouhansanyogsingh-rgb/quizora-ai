@@ -1,6 +1,6 @@
 async function runTests() {
   console.log('==================================================');
-  console.log('TESTING 4 NEW CORE FEATURES OF ADAPTLEARN AI');
+  console.log('TESTING 4 NEW CORE FEATURES OF QUIZORA AI');
   console.log('==================================================');
 
   // --- 1. Test Homepage Status ---
@@ -9,7 +9,7 @@ async function runTests() {
   console.log('  Homepage Status:', homeRes.status);
   if (homeRes.status !== 200) throw new Error('Home failed');
   const homeHtml = await homeRes.text();
-  console.log('  Contains "AdaptLearn AI":', homeHtml.includes('AdaptLearn AI'));
+  console.log('  Contains "QUIZORA AI":', homeHtml.includes('Quizora AI'));
 
   // --- 2. Test Student Auth Wall Profile Model ---
   console.log('\n[2] Testing Student Profile & Demo Fast Login...');

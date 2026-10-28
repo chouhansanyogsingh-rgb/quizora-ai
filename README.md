@@ -1,6 +1,6 @@
-# AdaptLearn AI — Adaptive Mastery & Knowledge Gap Remediation Platform
+# Quizora AI — Learn • Practice • Improve
 
-AdaptLearn AI is a next-generation adaptive learning web application designed to systematically identify student knowledge gaps and dynamically adapt their learning path. Unlike standard conversational chatbots, AdaptLearn AI models student cognitive state using Item Response difficulty adjustments, visual knowledge analytics, and style-tailored micro-lessons.
+Quizora AI is a next-generation adaptive learning web application designed to systematically identify student knowledge gaps and dynamically adapt their learning path. Unlike standard conversational chatbots, Quizora AI models student cognitive state using Item Response difficulty adjustments, visual knowledge analytics, and style-tailored micro-lessons.
 
 ---
 
