@@ -33,7 +33,6 @@ interface Props {
   };
   onCompleteQuiz: (answers: AssessmentAnswer[]) => void;
   isEvaluating: boolean;
-  onActiveQuestionChange?: (question: Question | null) => void;
 }
 
 export function AdaptiveAssessment({
@@ -41,7 +40,6 @@ export function AdaptiveAssessment({
   quizBank,
   onCompleteQuiz,
   isEvaluating,
-  onActiveQuestionChange,
 }: Props) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // 0 to 4
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>('medium');
@@ -61,13 +59,6 @@ export function AdaptiveAssessment({
     : ({} as Question);
 
   const totalQuestions = quizBank.subSkills.length || 5;
-
-  // Sync active question to parent context for AI doubt solver
-  useEffect(() => {
-    if (onActiveQuestionChange && currentQuestion?.questionText) {
-      onActiveQuestionChange(currentQuestion);
-    }
-  }, [currentQuestion, onActiveQuestionChange]);
 
   // Timer per question
   useEffect(() => {

@@ -1,6 +1,6 @@
 async function runTests() {
   console.log('==================================================');
-  console.log('TESTING 4 NEW CORE FEATURES OF QUIZORA AI');
+  console.log('TESTING CORE FEATURES OF QUIZORA AI');
   console.log('==================================================');
 
   // --- 1. Test Homepage Status ---
@@ -9,7 +9,7 @@ async function runTests() {
   console.log('  Homepage Status:', homeRes.status);
   if (homeRes.status !== 200) throw new Error('Home failed');
   const homeHtml = await homeRes.text();
-  console.log('  Contains "QUIZORA AI":', homeHtml.includes('Quizora AI'));
+  console.log('  Contains "Quizora AI":', homeHtml.includes('Quizora AI'));
 
   // --- 2. Test Student Auth Wall Profile Model ---
   console.log('\n[2] Testing Student Profile & Demo Fast Login...');
@@ -44,7 +44,7 @@ async function runTests() {
   
   // Verify explanation quality on all questions
   let explanationsValid = true;
-  genData.quizBank.subSkills.forEach((s, idx) => {
+  genData.quizBank.subSkills.forEach((s) => {
     ['easy', 'medium', 'hard'].forEach((tier) => {
       const q = s.questions[tier];
       if (!q || !q.explanation || q.explanation.length < 20) {
@@ -56,61 +56,8 @@ async function runTests() {
   console.log('  Sample Explanation for Q1 (Medium):');
   console.log('   "', genData.quizBank.subSkills[0].questions.medium.explanation.substring(0, 110) + '..."');
 
-  // --- 4. Test Context-Aware AI Doubt Solver Chatbot ---
-  console.log('\n[4] Testing Context-Aware AI Doubt Solver Chatbot...');
-
-  // Test Chip 1: Explain last wrong answer
-  console.log('  [4a] Testing Quick Chip: "Explain my last wrong answer simply"');
-  const chatRes1 = await fetch('http://localhost:3000/api/chat/doubt-solver', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages: [{ role: 'user', content: 'Explain my last wrong answer simply' }],
-      student: demoStudent,
-      currentTopic: 'Python Data Structures',
-      weakSubSkills: ['Dictionaries & Hash Lookups'],
-      activeQuestion: genData.quizBank.subSkills[1].questions.medium,
-    }),
-  });
-  const chatData1 = await chatRes1.json();
-  console.log('  Response preview:');
-  console.log('   ', chatData1.reply.split('\n')[0]);
-  console.log('   ', chatData1.reply.substring(0, 160).replace(/\n/g, ' ') + '...');
-
-  // Test Chip 2: Real-world analogy
-  console.log('\n  [4b] Testing Quick Chip: "Give me a real-world analogy"');
-  const chatRes2 = await fetch('http://localhost:3000/api/chat/doubt-solver', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages: [{ role: 'user', content: 'Give me a real-world analogy' }],
-      student: demoStudent,
-      currentTopic: 'Python Data Structures',
-      weakSubSkills: ['Dictionaries & Hash Lookups'],
-    }),
-  });
-  const chatData2 = await chatRes2.json();
-  console.log('  Analogy response preview:');
-  console.log('   ', chatData2.reply.substring(0, 180).replace(/\n/g, ' ') + '...');
-
-  // Test Chip 3: Quiz me on my weakest sub-topic
-  console.log('\n  [4c] Testing Quick Chip: "Quiz me on my weakest sub-topic"');
-  const chatRes3 = await fetch('http://localhost:3000/api/chat/doubt-solver', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages: [{ role: 'user', content: 'Quiz me on my weakest sub-topic' }],
-      student: demoStudent,
-      currentTopic: 'Python Data Structures',
-      weakSubSkills: ['Dictionaries & Hash Lookups'],
-    }),
-  });
-  const chatData3 = await chatRes3.json();
-  console.log('  Tutor Quiz response preview:');
-  console.log('   ', chatData3.reply.substring(0, 180).replace(/\n/g, ' ') + '...');
-
-  // --- 5. Test Diagnostic Evaluation & XP Awarding ---
-  console.log('\n[5] Testing Diagnostic Evaluation & Streak Increment...');
+  // --- 4. Test Diagnostic Evaluation & XP Awarding ---
+  console.log('\n[4] Testing Diagnostic Evaluation & Streak Increment...');
   const evalRes = await fetch('http://localhost:3000/api/assessment/evaluate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -150,8 +97,24 @@ async function runTests() {
   console.log('  Gaps Flagged in Red (<60%):', evalData.diagnosticResult.totalGaps);
   console.log('  Mastered Flagged in Green (>=80%):', evalData.diagnosticResult.totalMastered);
 
+  // --- 5. Test Targeted Micro-Lesson Generation ---
+  console.log('\n[5] Testing Personalized Micro-Lesson Generator for Weak Sub-Skills...');
+  const lessonRes = await fetch('http://localhost:3000/api/lesson/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      topic: 'Python Data Structures',
+      subSkill: genData.quizBank.subSkills[1].name,
+      learningStyle: demoStudent.preferredLearningStyle,
+      currentMastery: 40,
+    }),
+  });
+  const lessonData = await lessonRes.json();
+  console.log('  Lesson Title:', lessonData.microLesson.title);
+  console.log('  Practice Problems Count:', lessonData.microLesson.practiceProblems.length);
+
   console.log('\n==================================================');
-  console.log('✅ ALL 4 NEW FEATURES VERIFIED & OPERATING FLAWLESSLY!');
+  console.log('✅ ALL QUIZORA AI CORE FEATURES VERIFIED SUCCESSFULLY!');
   console.log('==================================================');
 }
 

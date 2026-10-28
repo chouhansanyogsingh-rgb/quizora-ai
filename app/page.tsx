@@ -10,7 +10,6 @@ import { SettingsModal } from '@/components/SettingsModal';
 import { HistoryDrawer } from '@/components/HistoryDrawer';
 import { AuthWallModal } from '@/components/AuthWallModal';
 import { GamificationCelebrationBanner } from '@/components/StreakGamificationBar';
-import { AIDoubtSolverDrawer } from '@/components/AIDoubtSolverDrawer';
 import {
   AssessmentAnswer,
   DiagnosticResult,
@@ -45,7 +44,6 @@ export default function HomePage() {
   const [selectedSubSkill, setSelectedSubSkill] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
   const [history, setHistory] = useState<ProgressHistoryItem[]>([]);
-  const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
 
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
@@ -284,10 +282,6 @@ export default function HomePage() {
     fetchHistory();
   };
 
-  const weakSkillsList = diagnosticResult?.subSkillMasteries
-    ?.filter((s) => s.status === 'gap')
-    ?.map((s) => s.subSkill) || [];
-
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 relative">
       {/* Feature 1: Student Authentication Wall (gates app if not logged in) */}
@@ -333,7 +327,6 @@ export default function HomePage() {
             quizBank={quizBank}
             onCompleteQuiz={handleCompleteQuiz}
             isEvaluating={isEvaluating}
-            onActiveQuestionChange={(q) => setActiveQuestion(q)}
           />
         )}
 
@@ -359,18 +352,6 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Feature 4: Floating Context-Aware AI Doubt Solver Chatbot Drawer */}
-      {studentUser && (
-        <AIDoubtSolverDrawer
-          student={studentUser}
-          currentTopic={profile?.topic || 'Python Data Structures'}
-          weakSubSkills={weakSkillsList}
-          activeQuestion={activeQuestion}
-          apiKey={apiKey}
-          onSaveApiKey={handleSaveApiKey}
-        />
-      )}
-
       {/* Footer */}
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-400 bg-slate-950/60">
         <div className="flex items-center justify-center gap-2 mb-1.5">
@@ -380,7 +361,7 @@ export default function HomePage() {
           <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Learn • Practice • Improve</span>
         </div>
         <p className="text-[11px] text-slate-500">
-          Item Response Difficulty Adaptation • Context-Aware AI Doubt Solver • 7-Day Consistency Streak
+          Item Response Difficulty Adaptation • Knowledge Gap Diagnostics • 7-Day Consistency Streak
         </p>
       </footer>
 

@@ -135,11 +135,3 @@ export interface ProgressHistoryItem {
   message: string;
   xpEarned?: number;
 }
-
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: string;
-  contextTag?: string;
-}
