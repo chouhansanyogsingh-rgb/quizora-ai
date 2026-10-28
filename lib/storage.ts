@@ -1,8 +1,17 @@
 import fs from 'fs';
 import path from 'path';
-import { DiagnosticResult, LearnerProfile, MicroLesson, ProgressHistoryItem, SubSkillMastery } from './types';
+import {
+  DEMO_STUDENT,
+  DiagnosticResult,
+  LearnerProfile,
+  MicroLesson,
+  ProgressHistoryItem,
+  StudentUser,
+  SubSkillMastery,
+} from './types';
 
 export interface AppStoreData {
+  students: Record<string, StudentUser>;
   profiles: Record<string, LearnerProfile>;
   diagnostics: Record<string, DiagnosticResult>;
   lessons: Record<string, MicroLesson>; // keyed by `${topic}:${subSkill}:${learningStyle}`
@@ -30,13 +39,21 @@ export function loadStore(): AppStoreData {
   try {
     if (fs.existsSync(STORE_PATH)) {
       const raw = fs.readFileSync(STORE_PATH, 'utf-8');
-      return JSON.parse(raw);
+      const data = JSON.parse(raw);
+      if (!data.students) data.students = {};
+      if (!data.students[DEMO_STUDENT.id]) {
+        data.students[DEMO_STUDENT.id] = DEMO_STUDENT;
+      }
+      return data;
     }
   } catch (err) {
     console.error('Error reading store file, using fallback:', err);
   }
 
   return {
+    students: {
+      [DEMO_STUDENT.id]: DEMO_STUDENT,
+    },
     profiles: {},
     diagnostics: {},
     lessons: {},
@@ -51,6 +68,45 @@ export function saveStore(data: AppStoreData): void {
   } catch (err) {
     console.error('Error saving store to file:', err);
   }
+}
+
+export function saveStudent(student: StudentUser): void {
+  const store = loadStore();
+  store.students[student.id] = student;
+  saveStore(store);
+}
+
+export function getStudent(id: string): StudentUser | null {
+  const store = loadStore();
+  return store.students[id] || null;
+}
+
+export function awardStudentXP(
+  studentId: string,
+  xpDelta: number,
+  extendStreak: boolean = false
+): StudentUser | null {
+  const store = loadStore();
+  const student = store.students[studentId];
+  if (!student) return null;
+
+  student.xp = (student.xp || 0) + xpDelta;
+
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const todayName = dayNames[new Date().getDay()];
+
+  if (!student.activeDaysThisWeek.includes(todayName)) {
+    student.activeDaysThisWeek.push(todayName);
+  }
+
+  if (extendStreak) {
+    student.streakDays = (student.streakDays || 0) + 1;
+  }
+  student.lastActiveDate = new Date().toISOString();
+
+  store.students[studentId] = student;
+  saveStore(store);
+  return student;
 }
 
 export function saveProfile(profile: LearnerProfile): void {
@@ -68,7 +124,7 @@ export function saveDiagnostic(diagnostic: DiagnosticResult): void {
   const store = loadStore();
   store.diagnostics[diagnostic.id] = diagnostic;
   
-  // Log event to history
+  // Log event to history with XP earned
   store.history.unshift({
     id: `hist-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     timestamp: new Date().toISOString(),
@@ -76,7 +132,8 @@ export function saveDiagnostic(diagnostic: DiagnosticResult): void {
     subSkill: diagnostic.profile.topic,
     oldScore: 0,
     newScore: diagnostic.overallScore,
-    message: `Completed diagnostic assessment for "${diagnostic.profile.topic}" with ${diagnostic.overallScore}% overall mastery. Found ${diagnostic.totalGaps} knowledge gaps.`,
+    xpEarned: 100,
+    message: `Completed diagnostic assessment for "${diagnostic.profile.topic}" with ${diagnostic.overallScore}% overall mastery (+100 XP).`,
   });
 
   saveStore(store);
@@ -111,6 +168,8 @@ export function updateSubSkillMasteryInStore(
   diag.totalDeveloping = diag.subSkillMasteries.filter(s => s.status === 'developing').length;
   diag.totalMastered = diag.subSkillMasteries.filter(s => s.status === 'mastered').length;
 
+  const xpEarned = updatedMastery.status === 'mastered' ? 75 : 50;
+
   // Append history log
   store.history.unshift({
     id: `hist-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -119,9 +178,10 @@ export function updateSubSkillMasteryInStore(
     subSkill,
     oldScore,
     newScore: updatedMastery.score,
+    xpEarned,
     message: updatedMastery.status === 'mastered'
-      ? `🎉 Mastered "${subSkill}"! Score reached ${updatedMastery.score}%. Gap successfully remediated!`
-      : `Practiced "${subSkill}" (${solvedProblemTitle || 'Targeted problem'}). Score increased from ${oldScore}% to ${updatedMastery.score}%.`,
+      ? `🎉 Mastered "${subSkill}"! Score reached ${updatedMastery.score}%. Gap successfully remediated (+${xpEarned} XP)!`
+      : `Practiced "${subSkill}" (${solvedProblemTitle || 'Targeted problem'}). Score increased from ${oldScore}% to ${updatedMastery.score}% (+${xpEarned} XP).`,
   });
 
   saveStore(store);

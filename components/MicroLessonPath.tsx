@@ -28,6 +28,7 @@ interface Props {
   onUpdateDiagnostic: (updatedDiag: DiagnosticResult) => void;
   apiKey?: string;
   onReturnToDashboard: () => void;
+  onAwardXP?: (amount: number, message: string) => void;
 }
 
 export function MicroLessonPath({
@@ -37,6 +38,7 @@ export function MicroLessonPath({
   onUpdateDiagnostic,
   apiKey,
   onReturnToDashboard,
+  onAwardXP,
 }: Props) {
   const [lesson, setLesson] = useState<MicroLesson | null>(null);
   const [isLoadingLesson, setIsLoadingLesson] = useState(false);
@@ -114,12 +116,18 @@ export function MicroLessonPath({
 
         if (data.evaluation.isCorrect) {
           triggerConfetti();
+          if (onAwardXP) {
+            onAwardXP(50, `Solved targeted practice for "${selectedSubSkill}"!`);
+          }
         }
 
         if (data.updatedDiagnostic) {
           onUpdateDiagnostic(data.updatedDiagnostic);
           if (data.updatedMastery && data.updatedMastery.score >= 80) {
             setRemediatedSkills((prev) => new Set(prev).add(selectedSubSkill));
+            if (onAwardXP) {
+              onAwardXP(50, `🎉 Mastered "${selectedSubSkill}"! Knowledge gap successfully bridged.`);
+            }
           }
         }
       }

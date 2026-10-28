@@ -9,10 +9,11 @@ import {
   XCircle,
   ArrowRight,
   TrendingUp,
-  TrendingDown,
   ShieldAlert,
   Flame,
   Lightbulb,
+  AlertTriangle,
+  BookOpen,
 } from 'lucide-react';
 import { AssessmentAnswer, DifficultyLevel, LearnerProfile, Question } from '@/lib/types';
 import { getNextDifficulty } from '@/lib/adaptiveEngine';
@@ -32,9 +33,16 @@ interface Props {
   };
   onCompleteQuiz: (answers: AssessmentAnswer[]) => void;
   isEvaluating: boolean;
+  onActiveQuestionChange?: (question: Question | null) => void;
 }
 
-export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvaluating }: Props) {
+export function AdaptiveAssessment({
+  profile,
+  quizBank,
+  onCompleteQuiz,
+  isEvaluating,
+  onActiveQuestionChange,
+}: Props) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // 0 to 4
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>('medium');
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -44,6 +52,22 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
   const [timeSpent, setTimeSpent] = useState(0);
   const [recordedAnswers, setRecordedAnswers] = useState<AssessmentAnswer[]>([]);
   const [adaptationMessage, setAdaptationMessage] = useState<string | null>(null);
+
+  const currentSubSkillGroup = quizBank.subSkills[currentQuestionIndex];
+  const currentQuestion: Question = currentSubSkillGroup
+    ? currentSubSkillGroup.questions[currentDifficulty] ||
+      currentSubSkillGroup.questions['medium'] ||
+      currentSubSkillGroup.questions['easy']
+    : ({} as Question);
+
+  const totalQuestions = quizBank.subSkills.length || 5;
+
+  // Sync active question to parent context for AI doubt solver
+  useEffect(() => {
+    if (onActiveQuestionChange && currentQuestion?.questionText) {
+      onActiveQuestionChange(currentQuestion);
+    }
+  }, [currentQuestion, onActiveQuestionChange]);
 
   // Timer per question
   useEffect(() => {
@@ -55,15 +79,6 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
     }
     return () => clearInterval(interval);
   }, [isAnswerSubmitted]);
-
-  const currentSubSkillGroup = quizBank.subSkills[currentQuestionIndex];
-  const currentQuestion: Question = currentSubSkillGroup
-    ? currentSubSkillGroup.questions[currentDifficulty] ||
-      currentSubSkillGroup.questions['medium'] ||
-      currentSubSkillGroup.questions['easy']
-    : ({} as Question);
-
-  const totalQuestions = quizBank.subSkills.length || 5;
 
   const handleSubmitAnswer = () => {
     if (selectedOption === null) return;
@@ -90,12 +105,12 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
       if (isCorrect) {
         setAdaptationMessage(
           nextDiff === currentDifficulty
-            ? `Top tier maintained! Next question calibrated at ${nextDiff.toUpperCase()} difficulty.`
-            : `Great accuracy! Dynamic engine escalated difficulty from ${currentDifficulty.toUpperCase()} → ${nextDiff.toUpperCase()}.`
+            ? `Top tier maintained! Next question will test advanced application at ${nextDiff.toUpperCase()} difficulty.`
+            : `Great accuracy! Dynamic engine escalated difficulty from ${currentDifficulty.toUpperCase()} → ${nextDiff.toUpperCase()} (+mastery weighting).`
         );
       } else {
         setAdaptationMessage(
-          `Misconception spotted. Dynamic engine recalibrated next question from ${currentDifficulty.toUpperCase()} → ${nextDiff.toUpperCase()} for targeted diagnosis.`
+          `Misconception identified. Dynamic engine recalibrated next question from ${currentDifficulty.toUpperCase()} → ${nextDiff.toUpperCase()} to isolate foundational root causes.`
         );
       }
     }
@@ -126,6 +141,8 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
     hard: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
   };
 
+  const isCurrentSelectionCorrect = selectedOption === currentQuestion.correctOptionIndex;
+
   return (
     <div className="max-w-3xl mx-auto py-6 px-4 animate-fade-in">
       {/* Assessment Header & Live Progress */}
@@ -133,7 +150,7 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Diagnostic Assessment:
+              Adaptive Diagnostic:
             </span>
             <span className="text-sm font-extrabold text-white">{profile.topic}</span>
           </div>
@@ -146,7 +163,7 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
               }`}
             >
               <Flame className="w-3.5 h-3.5" />
-              <span>{currentDifficulty} Difficulty</span>
+              <span>{currentDifficulty} Tier</span>
             </div>
 
             {/* Time spent */}
@@ -187,7 +204,7 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
 
         {/* Sub-skill context tag */}
         <div className="inline-block px-3 py-1 rounded-md bg-slate-800 border border-slate-700 text-xs text-slate-300 font-medium mb-4">
-          Sub-skill: <strong className="text-white">{currentSubSkillGroup?.name}</strong>
+          Diagnostic Target: <strong className="text-white">{currentSubSkillGroup?.name}</strong>
         </div>
 
         {/* Question Text */}
@@ -222,13 +239,13 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
                 cardStyle = 'bg-indigo-600/20 border-indigo-500 ring-2 ring-indigo-500/30 text-white';
               }
             } else {
-              // Answer submitted state
+              // Answer submitted state: Highlight chosen in red if wrong, and correct in green!
               if (isCorrectOption) {
-                cardStyle = 'bg-emerald-500/20 border-emerald-500 text-emerald-200 font-medium ring-2 ring-emerald-500/30';
+                cardStyle = 'bg-emerald-500/20 border-emerald-500 text-emerald-200 font-semibold ring-2 ring-emerald-500/40 shadow-emerald-500/10 shadow-lg';
               } else if (isSelected && !isCorrectOption) {
-                cardStyle = 'bg-rose-500/20 border-rose-500 text-rose-200 ring-2 ring-rose-500/30';
+                cardStyle = 'bg-rose-500/20 border-rose-500 text-rose-200 ring-2 ring-rose-500/40 shadow-rose-500/10 shadow-lg';
               } else {
-                cardStyle = 'bg-slate-800/20 border-slate-800/60 text-slate-500 opacity-60';
+                cardStyle = 'bg-slate-800/20 border-slate-800/60 text-slate-500 opacity-50';
               }
             }
 
@@ -246,9 +263,9 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
                       isSelected && !isAnswerSubmitted
                         ? 'bg-indigo-600 text-white'
                         : isAnswerSubmitted && isCorrectOption
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-emerald-500 text-white shadow-sm'
                         : isAnswerSubmitted && isSelected
-                        ? 'bg-rose-500 text-white'
+                        ? 'bg-rose-500 text-white shadow-sm'
                         : 'bg-slate-700/60 text-slate-400'
                     }`}
                   >
@@ -258,10 +275,16 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
                 </div>
 
                 {isAnswerSubmitted && isCorrectOption && (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>Correct Answer</span>
+                  </div>
                 )}
                 {isAnswerSubmitted && isSelected && !isCorrectOption && (
-                  <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-xs text-rose-400 font-bold bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/30">
+                    <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>Your Selection</span>
+                  </div>
                 )}
               </button>
             );
@@ -312,68 +335,105 @@ export function AdaptiveAssessment({ profile, quizBank, onCompleteQuiz, isEvalua
               type="button"
               disabled={selectedOption === null}
               onClick={handleSubmitAnswer}
-              className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:pointer-events-none text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition"
+              className="w-full sm:w-auto px-7 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:pointer-events-none text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition"
             >
               Confirm Answer
             </button>
           </div>
         )}
 
-        {/* Immediate Feedback Explanation (after submission) */}
+        {/* Feature 3: Immediate High-Visibility Wrong / Correct Answer Explanation Card */}
         {isAnswerSubmitted && (
           <div className="pt-6 border-t border-slate-800 animate-slide-up space-y-4">
             <div
-              className={`p-4 rounded-xl border ${
-                selectedOption === currentQuestion.correctOptionIndex
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
-                  : 'bg-rose-500/10 border-rose-500/30 text-rose-200'
+              className={`p-5 rounded-2xl border ${
+                isCurrentSelectionCorrect
+                  ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-100 shadow-xl shadow-emerald-950/20'
+                  : 'bg-rose-950/30 border-rose-500/40 text-rose-100 shadow-xl shadow-rose-950/20'
               }`}
             >
-              <div className="flex items-center gap-2 font-bold text-sm mb-1">
-                {selectedOption === currentQuestion.correctOptionIndex ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Correct Answer!</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="w-4 h-4 text-rose-400" />
-                    <span>Concept Missed</span>
-                  </>
-                )}
+              <div className="flex items-center justify-between gap-3 mb-3 border-b border-white/10 pb-2.5">
+                <div className="flex items-center gap-2 font-extrabold text-sm sm:text-base">
+                  {isCurrentSelectionCorrect ? (
+                    <>
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                      <span className="text-emerald-300">Great Job! Correct Concept Applied</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
+                      <span className="text-rose-300">Why This Happens &amp; Correct Concept</span>
+                    </>
+                  )}
+                </div>
+
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                    isCurrentSelectionCorrect
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                  }`}
+                >
+                  {isCurrentSelectionCorrect ? 'Mastery +' : 'Knowledge Gap Identified'}
+                </span>
               </div>
-              <p className="text-xs leading-relaxed opacity-95">{currentQuestion.explanation}</p>
+
+              {/* Misconception Alert if wrong */}
+              {!isCurrentSelectionCorrect && (
+                <div className="mb-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-200 space-y-1">
+                  <p className="font-bold flex items-center gap-1.5 text-rose-300">
+                    <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                    <span>The Underlying Misconception:</span>
+                  </p>
+                  <p className="leading-relaxed opacity-90">
+                    Option {String.fromCharCode(65 + (selectedOption ?? 0))} is a classic trap. Students frequently overlook that Python references mutable sub-objects by address, or assume lookup operations incur linear traversal when hashed collections provide constant time.
+                  </p>
+                </div>
+              )}
+
+              {/* Core Concept Breakdown */}
+              <div className="space-y-1.5 text-xs sm:text-sm leading-relaxed">
+                <p className="font-bold text-white flex items-center gap-1.5">
+                  <BookOpen className="w-3.5 h-3.5 text-indigo-300" />
+                  <span>The Fundamental Principle:</span>
+                </p>
+                <p className="text-slate-200 opacity-95">{currentQuestion.explanation}</p>
+              </div>
             </div>
 
             {/* Dynamic difficulty adaptation notice */}
             {adaptationMessage && (
-              <div className="p-3 rounded-xl bg-slate-800 border border-slate-700 text-xs text-indigo-300 flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-xs text-indigo-300 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-indigo-400 shrink-0" />
                 <span>{adaptationMessage}</span>
               </div>
             )}
 
-            {/* Action to continue */}
-            <div className="flex justify-end pt-2">
+            {/* Feature 3: Explicit "Got It — Next Question" Action Button */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <span className="text-[11px] text-slate-400">
+                Read the concept explanation above before continuing to seal the gap.
+              </span>
+
               <button
                 type="button"
                 disabled={isEvaluating}
                 onClick={handleNextQuestion}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-lg shadow-indigo-600/40 transition transform active:scale-95"
               >
                 {isEvaluating ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Generating Knowledge Gap Dashboard...</span>
+                    <span>Analyzing Sub-Skill Knowledge Gaps...</span>
                   </>
                 ) : currentQuestionIndex + 1 < totalQuestions ? (
                   <>
-                    <span>Next Sub-skill Question</span>
+                    <span>Got It — Next Question</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 ) : (
                   <>
-                    <span>Complete Assessment & View Gap Analytics</span>
+                    <span>Got It — View Diagnostic Results</span>
                     <Sparkles className="w-4 h-4" />
                   </>
                 )}

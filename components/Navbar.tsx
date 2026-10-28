@@ -1,13 +1,26 @@
 'use client';
 
 import React from 'react';
-import { Brain, Sparkles, Settings, History, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
-import { DiagnosticResult } from '@/lib/types';
+import {
+  Brain,
+  Sparkles,
+  Settings,
+  History,
+  CheckCircle,
+  AlertTriangle,
+  ArrowRight,
+  LogOut,
+  User,
+} from 'lucide-react';
+import { DiagnosticResult, StudentUser } from '@/lib/types';
+import { NavbarGamification } from './StreakGamificationBar';
 
 interface Props {
   currentScreen: 'setup' | 'assessment' | 'dashboard' | 'lesson';
   onNavigate: (screen: 'setup' | 'assessment' | 'dashboard' | 'lesson') => void;
   diagnosticResult: DiagnosticResult | null;
+  student: StudentUser | null;
+  onLogout: () => void;
   onOpenSettings: () => void;
   onToggleHistory: () => void;
   hasHistory: boolean;
@@ -17,6 +30,8 @@ export function Navbar({
   currentScreen,
   onNavigate,
   diagnosticResult,
+  student,
+  onLogout,
   onOpenSettings,
   onToggleHistory,
   hasHistory,
@@ -30,34 +45,34 @@ export function Navbar({
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         {/* Brand */}
         <div
           onClick={() => onNavigate('setup')}
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-2.5 cursor-pointer group shrink-0"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition">
             <div className="w-full h-full bg-slate-900 rounded-[11px] flex items-center justify-center">
               <Brain className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-sm sm:text-base tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">
                 AdaptLearn AI
               </span>
-              <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                MVP
+              <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                PRO
               </span>
             </div>
-            <p className="hidden sm:block text-[10px] text-slate-400 tracking-wide">
-              Adaptive Mastery & Dynamic Remediation
+            <p className="hidden md:block text-[9px] text-slate-400 tracking-wide">
+              Adaptive Mastery &amp; Knowledge Gap Engine
             </p>
           </div>
         </div>
 
         {/* Navigation Step Breadcrumbs */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-xl text-xs">
+        <nav className="hidden lg:flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-xl text-xs">
           {steps.map((step, idx) => {
             const isActive = currentScreen === step.id;
             const isClickable =
@@ -87,31 +102,41 @@ export function Navbar({
           })}
         </nav>
 
-        {/* Right Action Icons */}
-        <div className="flex items-center gap-2">
+        {/* Right Section: Streak/XP Bar + Student Profile & Actions */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Feature 2: Gamification Streak & XP Bar */}
+          {student && (
+            <NavbarGamification
+              student={student}
+              onClickStreak={() => onNavigate('dashboard')}
+            />
+          )}
+
+          {/* Diagnostic score pill if available */}
           {diagnosticResult && (
             <div
               onClick={() => onNavigate('dashboard')}
-              className="hidden lg:flex items-center gap-2.5 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition"
+              className="hidden xl:flex items-center gap-2 px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition"
             >
               <div className="text-right">
-                <p className="text-[10px] text-slate-400 uppercase font-semibold">Mastery</p>
+                <p className="text-[9px] text-slate-400 uppercase font-semibold">Mastery</p>
                 <p className="text-xs font-bold text-indigo-300">{diagnosticResult.overallScore}%</p>
               </div>
               {diagnosticResult.totalGaps > 0 ? (
-                <div className="flex items-center gap-1 text-[11px] text-rose-400 font-medium bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20">
-                  <AlertTriangle className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1 text-[10px] text-rose-400 font-medium bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">
+                  <AlertTriangle className="w-3 h-3" />
                   <span>{diagnosticResult.totalGaps} Gap{diagnosticResult.totalGaps > 1 ? 's' : ''}</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  <span>All Clear</span>
+                <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                  <CheckCircle className="w-3 h-3" />
+                  <span>Mastered</span>
                 </div>
               )}
             </div>
           )}
 
+          {/* Progress History Drawer Toggle */}
           <button
             onClick={onToggleHistory}
             title="View Real-Time Progress History Log"
@@ -123,6 +148,7 @@ export function Navbar({
             )}
           </button>
 
+          {/* AI Settings Modal */}
           <button
             onClick={onOpenSettings}
             title="AI Engine Configuration"
@@ -130,6 +156,36 @@ export function Navbar({
           >
             <Settings className="w-4 h-4" />
           </button>
+
+          {/* Feature 1: Student User Pill & Logout Button */}
+          {student && (
+            <div className="flex items-center gap-1.5 pl-1 border-l border-slate-800">
+              <div
+                title={`${student.name} • ${student.emailOrRollNo} • ${student.semester}`}
+                className="hidden md:flex items-center gap-2 px-2.5 py-1 bg-slate-900/80 border border-slate-800 rounded-xl"
+              >
+                <div className="w-6 h-6 rounded-lg bg-indigo-600/30 text-indigo-400 flex items-center justify-center text-[11px] font-black">
+                  {student.name.charAt(0)}
+                </div>
+                <div className="text-left">
+                  <p className="text-[11px] font-bold text-white truncate max-w-[80px] leading-tight">
+                    {student.name}
+                  </p>
+                  <p className="text-[9px] text-slate-400 leading-none truncate max-w-[80px]">
+                    {student.semester.split(' ')[0]}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={onLogout}
+                title="Logout Student Session"
+                className="p-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl border border-transparent hover:border-rose-500/30 transition"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

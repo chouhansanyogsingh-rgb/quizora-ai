@@ -13,19 +13,23 @@ import {
   BarChart2,
   Compass,
   RotateCcw,
+  User,
 } from 'lucide-react';
-import { DiagnosticResult, SubSkillMastery } from '@/lib/types';
+import { DiagnosticResult, StudentUser, SubSkillMastery } from '@/lib/types';
 import { MasteryBarChart } from './MasteryBarChart';
 import { MasteryRadarChart } from './MasteryRadarChart';
+import { StreakCalendarWidget } from './StreakGamificationBar';
 
 interface Props {
   diagnostic: DiagnosticResult;
+  student: StudentUser | null;
   onOpenMicroLesson: (subSkill: string) => void;
   onRetakeAssessment: () => void;
 }
 
 export function KnowledgeGapDashboard({
   diagnostic,
+  student,
   onOpenMicroLesson,
   onRetakeAssessment,
 }: Props) {
@@ -38,16 +42,24 @@ export function KnowledgeGapDashboard({
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4 animate-fade-in space-y-8">
-      {/* Top Banner / Topic Overview */}
+      {/* Top Banner / Topic & Student Overview */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden backdrop-blur-sm">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3">
-              <Brain className="w-3.5 h-3.5" />
-              <span>Diagnostic Assessment Report</span>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
+                <Brain className="w-3.5 h-3.5" />
+                <span>Diagnostic Assessment Report</span>
+              </span>
+              {student && (
+                <span className="text-xs text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
+                  Learner: <strong className="text-white">{student.name}</strong> ({student.semester})
+                </span>
+              )}
             </div>
+
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Knowledge Gap Analysis: <span className="text-indigo-400">{profile.topic}</span>
             </h1>
@@ -131,6 +143,9 @@ export function KnowledgeGapDashboard({
           </div>
         </div>
       </div>
+
+      {/* Feature 2: 7-Day Streak Calendar Widget */}
+      {student && <StreakCalendarWidget student={student} />}
 
       {/* Visual Analytics Row: Bar Chart + Radar Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

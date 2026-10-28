@@ -8,10 +8,26 @@ import { KnowledgeGapDashboard } from '@/components/KnowledgeGapDashboard';
 import { MicroLessonPath } from '@/components/MicroLessonPath';
 import { SettingsModal } from '@/components/SettingsModal';
 import { HistoryDrawer } from '@/components/HistoryDrawer';
-import { AssessmentAnswer, DiagnosticResult, LearnerProfile, LearningStyle, ProgressHistoryItem, Question } from '@/lib/types';
+import { AuthWallModal } from '@/components/AuthWallModal';
+import { GamificationCelebrationBanner } from '@/components/StreakGamificationBar';
+import { AIDoubtSolverDrawer } from '@/components/AIDoubtSolverDrawer';
+import {
+  AssessmentAnswer,
+  DiagnosticResult,
+  LearnerProfile,
+  LearningStyle,
+  ProgressHistoryItem,
+  Question,
+  StudentUser,
+  DEMO_STUDENT,
+} from '@/lib/types';
+import { triggerConfetti } from '@/lib/utils';
 
 export default function HomePage() {
   const [currentScreen, setCurrentScreen] = useState<'setup' | 'assessment' | 'dashboard' | 'lesson'>('setup');
+  const [studentUser, setStudentUser] = useState<StudentUser | null>(null);
+  const [isAuthWallOpen, setIsAuthWallOpen] = useState(false);
+
   const [profile, setProfile] = useState<LearnerProfile | null>(null);
   const [quizBank, setQuizBank] = useState<{
     subSkills: {
@@ -29,15 +45,31 @@ export default function HomePage() {
   const [selectedSubSkill, setSelectedSubSkill] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
   const [history, setHistory] = useState<ProgressHistoryItem[]>([]);
+  const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
 
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  // Load API key and cached state from localStorage on mount
+  // Gamification celebration banner state
+  const [celebration, setCelebration] = useState<{
+    message: string;
+    xpEarned: number;
+    streakDays?: number;
+  } | null>(null);
+
+  // Load student session and state from localStorage on mount
   useEffect(() => {
     try {
+      const storedStudent = localStorage.getItem('adaptlearn_student_session');
+      if (storedStudent) {
+        setStudentUser(JSON.parse(storedStudent));
+      } else {
+        // Gate with auth wall if no student is logged in
+        setIsAuthWallOpen(true);
+      }
+
       const storedKey = localStorage.getItem('adaptlearn_api_key');
       if (storedKey) setApiKey(storedKey);
 
@@ -54,7 +86,6 @@ export default function HomePage() {
       console.warn('LocalStorage access issue:', e);
     }
 
-    // Fetch initial history
     fetchHistory();
   }, []);
 
@@ -68,6 +99,63 @@ export default function HomePage() {
     } catch (err) {
       console.warn('Failed to load history:', err);
     }
+  };
+
+  const handleStudentLogin = (student: StudentUser) => {
+    setStudentUser(student);
+    try {
+      localStorage.setItem('adaptlearn_student_session', JSON.stringify(student));
+    } catch (e) {}
+    setIsAuthWallOpen(false);
+    triggerConfetti();
+
+    setCelebration({
+      message: `Welcome back, ${student.name}! Your ${student.streakDays}-day streak is active.`,
+      xpEarned: 25,
+      streakDays: student.streakDays,
+    });
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('adaptlearn_student_session');
+    } catch (e) {}
+    setStudentUser(null);
+    setIsAuthWallOpen(true);
+  };
+
+  const handleAwardXP = (amount: number, message: string, extendStreak: boolean = false) => {
+    if (!studentUser) return;
+
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const todayName = dayNames[new Date().getDay()];
+    const currentActiveDays = studentUser.activeDaysThisWeek || [];
+    const updatedDays = currentActiveDays.includes(todayName)
+      ? currentActiveDays
+      : [...currentActiveDays, todayName];
+
+    const nextStreak = extendStreak ? (studentUser.streakDays || 1) + 1 : studentUser.streakDays;
+
+    const updatedStudent: StudentUser = {
+      ...studentUser,
+      xp: (studentUser.xp || 0) + amount,
+      streakDays: nextStreak,
+      activeDaysThisWeek: updatedDays,
+      lastActiveDate: new Date().toISOString(),
+    };
+
+    setStudentUser(updatedStudent);
+    try {
+      localStorage.setItem('adaptlearn_student_session', JSON.stringify(updatedStudent));
+    } catch (e) {}
+
+    setCelebration({
+      message,
+      xpEarned: amount,
+      streakDays: extendStreak ? nextStreak : undefined,
+    });
+
+    fetchHistory();
   };
 
   const handleSaveApiKey = (key: string) => {
@@ -109,7 +197,7 @@ export default function HomePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           topic,
-          learningStyle,
+          learningStyle: studentUser?.preferredLearningStyle || learningStyle,
           targetGoal,
           experienceLevel,
           customApiKey: apiKey,
@@ -165,6 +253,10 @@ export default function HomePage() {
           localStorage.setItem('adaptlearn_last_diagnostic', JSON.stringify(result));
         } catch (e) {}
 
+        // Award streak and XP for quiz completion!
+        handleAwardXP(100, `Completed diagnostic quiz for "${profile.topic}" with ${result.overallScore}% mastery!`, true);
+        triggerConfetti();
+
         await fetchHistory();
         setCurrentScreen('dashboard');
       } else {
@@ -192,20 +284,42 @@ export default function HomePage() {
     fetchHistory();
   };
 
+  const weakSkillsList = diagnosticResult?.subSkillMasteries
+    ?.filter((s) => s.status === 'gap')
+    ?.map((s) => s.subSkill) || [];
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
-      {/* Global Top Navbar */}
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 relative">
+      {/* Feature 1: Student Authentication Wall (gates app if not logged in) */}
+      <AuthWallModal
+        isOpen={isAuthWallOpen || !studentUser}
+        onLogin={handleStudentLogin}
+      />
+
+      {/* Feature 2: Celebration Banner on Streak / XP awards */}
+      {celebration && (
+        <GamificationCelebrationBanner
+          message={celebration.message}
+          xpEarned={celebration.xpEarned}
+          streakDays={celebration.streakDays}
+          onDismiss={() => setCelebration(null)}
+        />
+      )}
+
+      {/* Global Top Navbar with Streak, XP, & Logout */}
       <Navbar
         currentScreen={currentScreen}
         onNavigate={(screen) => setCurrentScreen(screen)}
         diagnosticResult={diagnosticResult}
+        student={studentUser}
+        onLogout={handleLogout}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onToggleHistory={() => setIsHistoryOpen(true)}
         hasHistory={history.length > 0}
       />
 
       {/* Screen Routing */}
-      <main className="flex-1 pb-16">
+      <main className="flex-1 pb-24">
         {currentScreen === 'setup' && (
           <TopicProfileSetup
             onStartAssessment={handleStartAssessment}
@@ -219,12 +333,14 @@ export default function HomePage() {
             quizBank={quizBank}
             onCompleteQuiz={handleCompleteQuiz}
             isEvaluating={isEvaluating}
+            onActiveQuestionChange={(q) => setActiveQuestion(q)}
           />
         )}
 
         {currentScreen === 'dashboard' && diagnosticResult && (
           <KnowledgeGapDashboard
             diagnostic={diagnosticResult}
+            student={studentUser}
             onOpenMicroLesson={handleOpenMicroLesson}
             onRetakeAssessment={() => setCurrentScreen('setup')}
           />
@@ -238,15 +354,27 @@ export default function HomePage() {
             onUpdateDiagnostic={handleUpdateDiagnostic}
             apiKey={apiKey}
             onReturnToDashboard={() => setCurrentScreen('dashboard')}
+            onAwardXP={(amount, msg) => handleAwardXP(amount, msg, false)}
           />
         )}
       </main>
 
+      {/* Feature 4: Floating Context-Aware AI Doubt Solver Chatbot Drawer */}
+      {studentUser && (
+        <AIDoubtSolverDrawer
+          student={studentUser}
+          currentTopic={profile?.topic || 'Python Data Structures'}
+          weakSubSkills={weakSkillsList}
+          activeQuestion={activeQuestion}
+          apiKey={apiKey}
+        />
+      )}
+
       {/* Footer */}
-      <footer className="border-t border-slate-850 py-6 text-center text-xs text-slate-400 bg-slate-950/60">
-        <p>AdaptLearn AI — Stateful Adaptive Learning & Knowledge Gap Remediation</p>
-        <p className="mt-1 text-[11px] text-slate-400">
-          Powered by Item Response Difficulty Adjustment • Google Gemini API • Structured Pedagogical Modeling
+      <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-400 bg-slate-950/60">
+        <p>AdaptLearn AI — Stateful Adaptive Learning &amp; Knowledge Gap Remediation</p>
+        <p className="mt-1 text-[11px] text-slate-500">
+          Item Response Difficulty Adaptation • Context-Aware AI Doubt Solver • 7-Day Consistency Streak
         </p>
       </footer>
 

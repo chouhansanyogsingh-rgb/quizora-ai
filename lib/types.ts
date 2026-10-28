@@ -2,8 +2,35 @@ export type LearningStyle = 'visual' | 'code' | 'step-by-step';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 export type SkillStatus = 'gap' | 'developing' | 'mastered';
 
+export interface StudentUser {
+  id: string;
+  name: string;
+  emailOrRollNo: string;
+  semester: string;
+  preferredLearningStyle: LearningStyle;
+  streakDays: number;
+  xp: number;
+  lastActiveDate: string;
+  activeDaysThisWeek: string[]; // e.g. ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+  createdAt: string;
+}
+
+export const DEMO_STUDENT: StudentUser = {
+  id: 'student-demo-alex',
+  name: 'Alex Chen',
+  emailOrRollNo: 'CS-2024-042',
+  semester: 'Semester 5 (Systems & Data)',
+  preferredLearningStyle: 'visual',
+  streakDays: 5,
+  xp: 450,
+  lastActiveDate: '2026-10-28T00:00:00.000Z',
+  activeDaysThisWeek: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+  createdAt: '2026-10-20T00:00:00.000Z',
+};
+
 export interface LearnerProfile {
   id: string;
+  studentId?: string;
   topic: string;
   learningStyle: LearningStyle;
   targetGoal: string;
@@ -20,6 +47,7 @@ export interface Question {
   options: string[];
   correctOptionIndex: number;
   explanation: string;
+  misconceptionExplanation?: string;
   hint: string;
 }
 
@@ -100,9 +128,18 @@ export interface PracticeSubmission {
 export interface ProgressHistoryItem {
   id: string;
   timestamp: string;
-  action: 'quiz_completed' | 'practice_solved' | 'gap_remediated' | 'lesson_read';
+  action: 'quiz_completed' | 'practice_solved' | 'gap_remediated' | 'lesson_read' | 'streak_extended';
   subSkill: string;
   oldScore: number;
   newScore: number;
   message: string;
+  xpEarned?: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  contextTag?: string;
 }
